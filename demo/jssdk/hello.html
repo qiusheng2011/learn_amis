@@ -40,16 +40,34 @@
         toolbar: [
           {
             type: "form",
-            mode:"inline",
-            pageClassName:"mb-0",
+            mode: "inline",
+            pageClassName: "mb-0",
             title: "toolbar2",
+            data: {
+              type: "<h1>(出入境)</h1>",
+              a: 2
+            },
+            intiApi: "http://39.105.97.149:8090/mock/57/demo/persons?a=${select_type}",
             body: [
               {
-                type:"select",
-                label:"提交类型",
-                name:"xxxx",
-                mode:"inline",
-                options: ["出国申请单","回国申请单"]
+                type: "select",
+                label: "提交${a==1? 'AAA':'BBB'}类型${type|raw}",
+                name: "select_type",
+                mode: "inline",
+                options: [
+                  {
+                    label: "出国申请单",
+                    value: "1"
+                  },
+                  {
+                    label: "入境申请单",
+                    value: "2"
+                  },
+                  {
+                    label: "名单",
+                    value: 3
+                  }
+                ]
               }
             ]
           }
@@ -61,28 +79,117 @@
           },
           {
             type: "form",
-            mode: "horizontal",
-            api: "/saveForm",
+            title: "搜索条件",
+            mode: "inline",
+            submitText: "搜索",
+            target: "demo_crud",
             body: [
               {
-                label: "Name",
+                label: "姓名",
                 type: "input-text",
                 name: "name",
-              },
-              {
-                label: "Email",
-                type: "input-email",
-                name: "email",
-              },
+              }
             ],
           },
-          {},
+          {
+            disabledOn: "${ select_type == 3}",
+            type: "service",
+            body: [
+              {
+
+                type: "crud",
+                "syncLocation": false,
+                api: {
+                  metchod: "get",
+                  url: 'http://39.105.97.149:8090/mock/57/demo/persons',
+                  data: {
+                    page_num: "${page}",
+                    page_size: "${perPage}",
+                    idcard: "$idcard",
+                    gender: "$gender",
+                    nane: "$name"
+
+                  },
+                  responseData:{
+                    total: "$rst.total",
+                    items: "$rst.data",
+                    pageNo:"$rst.page_num",
+                    pageSize:"$rst.page_size"
+                  }
+                },
+                name: "demo_crud",
+                title: "赞助人名单($rst.total)",
+                syncLocation: false,
+                footerToolbar: [
+                  "pagination",
+                  "switch-per-page"
+                ],
+               // source: "$rst.data",
+                filter: {
+                  title: "筛选",
+                  body: [
+                    {
+                      label: "ID",
+                      type: "input-text",
+                      name: "id",
+                    },
+                    {
+                      label: "姓名",
+                      type: "input-text",
+                      name: "name"
+                    },
+                    {
+                      label: "性别",
+                      type: "select",
+                      name: "gender",
+                      options: [
+                        "男",
+                        "女"
+                      ]
+                    },
+                    {
+                      label: "城市地区",
+                      type: "input-text",
+                      name: "city_county",
+                    }
+                  ]
+                },
+                columns: [
+                  {
+                    name: "idcard",
+                    label: "<h3>ID</h3>"
+                  },
+                  {
+                    name: "name",
+                    label: "<h3>姓名</h3>"
+                  },
+                  {
+                    name: "gender",
+                    label: "性别"
+                  },
+                  {
+                    name: '${(birthday)}',
+                    label: '生日'
+                  },
+                  {
+                    name: "${CONCATENATE(city, county)}",
+                    label: "城市-地区"
+                  },
+                  {
+                    name: "${LEFT(description,10)}",
+                    label: '介绍'
+                  }
+
+                ]
+              }
+
+
+            ]
+          },
         ],
       };
       let amisScoped = amis.embed("#root", amisJSON, {}, { theme: "antd" });
-      amisScoped.updateProos({
-        theme: "antd",
-      });
+
     })();
   </script>
 </body>
